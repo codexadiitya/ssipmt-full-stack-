@@ -135,4 +135,36 @@ const updatePassword = async (req, res) => {
   }
 };
 
-module.exports = { register, login, refreshToken, getMe, getProfile, updatePassword };
+// ── @POST /api/auth/seed ──────────────────────────────────────────────────────
+const seedUsers = async (req, res) => {
+  try {
+    const { secret } = req.body;
+    if (secret !== 'ssipmt_seed_2024') {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const defaultUsers = [
+      { name: 'Admin User', email: 'admin@ssipmt.com', password: 'password123', role: 'admin', branch: 'Admin', isActive: true },
+      { name: 'Faculty Demo', email: 'faculty@ssipmt.com', password: 'password123', role: 'faculty', branch: 'CSE', isActive: true },
+      { name: 'Student Demo', email: 'student@ssipmt.com', password: 'password123', role: 'student', branch: 'CSE', semester: 4, enrollmentNo: 'CS2101001', isActive: true },
+    ];
+
+    const results = [];
+    for (const userData of defaultUsers) {
+      const existing = await User.findOne({ email: userData.email });
+      if (existing) {
+        results.push({ email: userData.email, status: 'already exists' });
+      } else {
+        await User.create(userData);
+        results.push({ email: userData.email, status: 'created' });
+      }
+    }
+
+    res.json({ message: 'Seed complete', results });
+  } catch (err) {
+    console.error('seed error:', err);
+    res.status(500).json({ message: 'Seed failed', error: err.message });
+  }
+};
+
+module.exports = { register, login, refreshToken, getMe, getProfile, updatePassword, seedUsers };
