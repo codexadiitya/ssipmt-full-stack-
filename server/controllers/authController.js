@@ -100,4 +100,39 @@ const getMe = async (req, res) => {
   res.json({ user: req.user });
 };
 
-module.exports = { register, login, refreshToken, getMe };
+// ── @GET /api/auth/profile ────────────────────────────────────────────────────
+const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ profile: user });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ── @PUT /api/auth/update-password ────────────────────────────────────────────
+const updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    // Explicitly select password to verify
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Incorrect current password' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('updatePassword error:', err);
+    res.status(500).json({ message: 'Server error while updating password' });
+  }
+};
+
+module.exports = { register, login, refreshToken, getMe, getProfile, updatePassword };

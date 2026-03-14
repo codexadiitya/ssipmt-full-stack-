@@ -23,6 +23,7 @@ export default function AdminDashboard() {
     { n: data?.totalFaculty ?? 0, lbl: 'Faculty', color: 'var(--G)', bg: 'var(--GL)', icon: '👩‍🏫' },
     { n: data?.totalNotices ?? 0, lbl: 'Notices', color: 'var(--O)', bg: 'var(--OL)', icon: '🔔', onClick: () => navigate('/admin/notices') },
     { n: data?.totalSubjects ?? 0, lbl: 'Subjects', color: 'var(--B)', bg: 'var(--BL)', icon: '📚' },
+    { n: 'CSV', lbl: 'Reports', color: 'var(--R)', bg: 'var(--RL)', icon: '📊', onClick: () => navigate('/admin/reports') },
   ];
 
   return (

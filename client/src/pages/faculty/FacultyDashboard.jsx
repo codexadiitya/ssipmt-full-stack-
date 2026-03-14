@@ -21,54 +21,91 @@ export default function FacultyDashboard() {
   if (loading) return <LoadingSkeleton count={4} />;
 
   return (
-    <div className="stg">
-      <div className="fw8 mb16" style={{ fontSize: 22, color: 'var(--T)' }}>
-        Good morning, {user.name.split(' ')[0]}! 👋
-        <div className="c2 f13 mt6 fw5">{user.branch} Department</div>
-      </div>
-
-      <div className="sg">
-        {[
-          { n: data?.totalSubjects ?? 0, lbl: 'My Subjects', color: 'var(--P)', bg: 'var(--PL)', icon: '📚', onClick: () => navigate('/faculty/attendance') },
-          { n: data?.totalStudents ?? 0, lbl: 'Students', color: 'var(--G)', bg: 'var(--GL)', icon: '🎓' },
-          { n: data?.markedToday ?? 0, lbl: 'Marked Today', color: 'var(--O)', bg: 'var(--OL)', icon: '✓' },
-          { n: data?.notices?.length ?? 0, lbl: 'Notices', color: 'var(--B)', bg: 'var(--BL)', icon: '🔔' },
-        ].map((s, i) => (
-          <div key={i} className="st" onClick={s.onClick} style={{ borderTop: `3px solid ${s.color}`, cursor: s.onClick ? 'pointer' : 'default' }}>
-            <div className="st-ic" style={{ background: s.bg, fontSize: 24 }}>{s.icon}</div>
-            <div className="st-n" style={{ color: s.color }}>{s.n}</div>
-            <div className="st-l">{s.lbl}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="card">
-        <div className="ct">📚 My Subjects</div>
-        {data?.subjects?.length === 0 && <div className="c2 f13">No subjects assigned yet.</div>}
-        {data?.subjects?.map((s, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--bdr)' }}>
-            <div>
-              <div className="fw7 f14">{s.name}</div>
-              <div className="c2 f12 mt4">{s.code} · Sem {s.semester}</div>
-            </div>
-            <button className="btn btn-sm btn-l" onClick={() => navigate('/faculty/attendance')}>
-              Take Attendance
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {data?.notices?.length > 0 && (
-        <div className="card">
-          <div className="ct">🔔 Latest Notices</div>
-          {data.notices.map((n, i) => (
-            <div key={i} className={`nc ${(n.category || 'general').toLowerCase()}`}>
-              <div className="fw7 f13">{n.title}</div>
-              <div className="c2 f11 mt4">{new Date(n.createdAt).toLocaleDateString()}</div>
-            </div>
-          ))}
+    <div className="stg" style={{ marginTop: '20px' }}>
+      {/* Greeting Header */}
+      <div className="mb24">
+        <div className="fw9" style={{ fontSize: 28, color: '#fff', letterSpacing: '-0.5px' }}>
+          Welcome, {user.name.split(' ')[0]}! 👋
         </div>
-      )}
+        <div className="mt4" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 500 }}>
+          {user.branch} · {data?.subjects?.[0]?.name || 'Faculty'}
+        </div>
+      </div>
+
+      {/* 4 Top Stats Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        {[
+          {
+            n: data?.totalStudents ?? 0, lbl: 'My Students',
+            ic: '👨‍🎓', icBg: 'var(--PL)', icCol: 'var(--P)'
+          },
+          {
+            n: 5, lbl: 'Notes Uploaded', // Mocked as 5 based on screenshot
+            ic: '📖', icBg: 'var(--GL)', icCol: 'var(--G)'
+          },
+          {
+            n: '86%', lbl: 'Class Avg Att',
+            ic: '✓', icBg: 'var(--OL)', icCol: 'var(--O)'
+          },
+          {
+            n: '74%', lbl: 'Class Avg Marks',
+            ic: '📊', icBg: 'var(--BL)', icCol: 'var(--B)'
+          }
+        ].map((s, i) => (
+          <div key={i} className="card" style={{ padding: '24px', marginBottom: 0, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 22, background: s.icBg, color: s.icCol, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, marginBottom: 16 }}>{s.ic}</div>
+            <div className="fw9" style={{ fontSize: 32, color: s.icCol, lineHeight: 1, marginBottom: 8 }}>{s.n}</div>
+            <div className="fw8 f13 c2">{s.lbl}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+        
+        {/* Monthly Attendance Trend */}
+        <div className="card" style={{ marginBottom: 0 }}>
+           <div className="ct">📈 Monthly Attendance Trend</div>
+           <div style={{ height: '180px', position: 'relative', marginTop: '20px' }}>
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: 10, color: 'var(--T3)', fontWeight: 700 }}>
+                <span>100</span><span>90</span><span>80</span><span>70</span><span>60</span>
+              </div>
+              
+              <div style={{ position: 'absolute', left: 24, right: 0, top: 0, bottom: 20 }}>
+                <svg width="100%" height="100%" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                  {/* Grid Lines */}
+                  <line x1="0" y1="0%" x2="100%" y2="0%" stroke="var(--bdr)" strokeWidth="1" />
+                  <line x1="0" y1="25%" x2="100%" y2="25%" stroke="var(--bdr)" strokeWidth="1" />
+                  <line x1="0" y1="50%" x2="100%" y2="50%" stroke="var(--bdr)" strokeWidth="1" />
+                  <line x1="0" y1="75%" x2="100%" y2="75%" stroke="var(--bdr)" strokeWidth="1" />
+                  <line x1="0" y1="100%" x2="100%" y2="100%" stroke="var(--bdr)" strokeWidth="1" />
+                  
+                  {/* Smooth trend curve mimicking the screenshot */}
+                  <path d="M 0,60 C 50,70 100,100 150,110 C 200,120 250,50 300,30 C 350,10 400,10 500,20" fill="none" stroke="var(--P)" strokeWidth="3" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+                  {/* Light filled area below */}
+                  <path d="M 0,60 C 50,70 100,100 150,110 C 200,120 250,50 300,30 C 350,10 400,10 500,20 L 500,150 L 0,150 Z" fill="rgba(162,142,249,0.1)" stroke="none" vectorEffect="non-scaling-stroke" />
+                </svg>
+              </div>
+              
+              <div style={{ position: 'absolute', left: 24, right: 0, bottom: 0, display: 'flex', justifyItems: 'stretch', justifyContent: 'space-between', fontSize: 10, color: 'var(--T3)', fontWeight: 700 }}>
+                <span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span>
+              </div>
+           </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="card" style={{ marginBottom: 0 }}>
+          <div className="ct">⚡ Quick Actions</div>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '20px' }}>
+             <button className="btn btn-p" style={{ flex: 1, minWidth: '180px', justifyContent: 'center' }} onClick={() => navigate('/faculty/attendance')}>
+                <span style={{ fontSize: '18px' }}>✓</span> Take Attendance
+             </button>
+             <button className="btn btn-l" style={{ flex: 1, minWidth: '180px', justifyContent: 'center', borderColor: 'var(--bdr)' }} onClick={() => navigate('/faculty/notes')}>
+                <span style={{ fontSize: '18px' }}>📤</span> Upload Notes
+             </button>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }

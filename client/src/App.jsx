@@ -23,6 +23,11 @@ import UploadNotes from './pages/faculty/UploadNotes';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageStudents from './pages/admin/ManageStudents';
 import Notices from './pages/admin/Notices';
+import Reports from './pages/admin/Reports';
+
+// Common pages
+import ProfileSettings from './pages/common/ProfileSettings';
+import StudentNotes from './pages/common/StudentNotes';
 
 /* ═══════════════════════════════════════════
    INLINE GLOBAL CSS (preserves existing design)
@@ -151,6 +156,7 @@ const NAV = {
   student: [
     { path: '/student/dashboard', label: 'Dashboard', icon: '🏠', title: 'Dashboard' },
     { path: '/student/attendance', label: 'Attendance', icon: '✓', title: 'Attendance' },
+    { path: '/student/notes', label: 'Notes', icon: '📚', title: 'Study Materials' },
     { path: '/student/results', label: 'Results', icon: '📊', title: 'Results' },
     { path: '/student/timetable', label: 'Timetable', icon: '📅', title: 'My Schedule' },
   ],
@@ -163,6 +169,7 @@ const NAV = {
     { path: '/admin/dashboard', label: 'Dashboard', icon: '🏠', title: 'Dashboard' },
     { path: '/admin/students', label: 'Students', icon: '🎓', title: 'Manage Students' },
     { path: '/admin/notices', label: 'Notices', icon: '📢', title: 'Notices' },
+    { path: '/admin/reports', label: 'Reports', icon: '📊', title: 'Attendance Reports' },
   ],
 };
 
@@ -180,6 +187,8 @@ function AppShell({ children }) {
     toast.success('Logged out successfully');
   };
 
+  const goToSettings = () => navigate('/settings');
+
   return (
     <div className="app">
       <div className="split-header" />
@@ -195,8 +204,8 @@ function AppShell({ children }) {
           <div className="tb-r">
             <div
               className="av"
-              onClick={handleLogout}
-              title="Logout"
+              onClick={goToSettings}
+              title="Profile & Settings"
               style={{ fontSize: 18 }}
             >
               {user?.name?.[0] ?? '?'}
@@ -244,14 +253,17 @@ export default function App() {
         <Route element={<ProtectedRoute role="student" />}>
           <Route element={<AppShell><Routes><Route index element={null} /></Routes></AppShell>}>
           </Route>
+          <Route path="/settings" element={<AppShell><ProfileSettings /></AppShell>} />
           <Route path="/student/dashboard" element={<AppShell><StudentDashboard /></AppShell>} />
           <Route path="/student/attendance" element={<AppShell><Attendance /></AppShell>} />
+          <Route path="/student/notes" element={<AppShell><StudentNotes /></AppShell>} />
           <Route path="/student/results" element={<AppShell><Results /></AppShell>} />
           <Route path="/student/timetable" element={<AppShell><Timetable /></AppShell>} />
         </Route>
 
         {/* Faculty routes */}
         <Route element={<ProtectedRoute role="faculty" />}>
+          <Route path="/settings" element={<AppShell><ProfileSettings /></AppShell>} />
           <Route path="/faculty/dashboard" element={<AppShell><FacultyDashboard /></AppShell>} />
           <Route path="/faculty/attendance" element={<AppShell><MarkAttendance /></AppShell>} />
           <Route path="/faculty/notes" element={<AppShell><UploadNotes /></AppShell>} />
@@ -259,9 +271,11 @@ export default function App() {
 
         {/* Admin routes */}
         <Route element={<ProtectedRoute role="admin" />}>
+          <Route path="/settings" element={<AppShell><ProfileSettings /></AppShell>} />
           <Route path="/admin/dashboard" element={<AppShell><AdminDashboard /></AppShell>} />
           <Route path="/admin/students" element={<AppShell><ManageStudents /></AppShell>} />
           <Route path="/admin/notices" element={<AppShell><Notices /></AppShell>} />
+          <Route path="/admin/reports" element={<AppShell><Reports /></AppShell>} />
         </Route>
 
         {/* Default - redirect to login */}

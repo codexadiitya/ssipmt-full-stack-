@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const facultyRoutes = require('./routes/facultyRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const noteRoutes = require('./routes/noteRoutes');
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/faculty', facultyRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notes', noteRoutes);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

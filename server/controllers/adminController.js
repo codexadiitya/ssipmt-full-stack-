@@ -145,5 +145,28 @@ const getAttendanceReport = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+// ── @POST /api/admin/users/import ─────────────────────────────────────────────
+const bulkImportStudents = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded. Please upload a CSV or Excel file.' });
+    }
 
-module.exports = { getDashboard, getUsers, getUser, updateUser, deleteUser, createNotice, getNotices, deleteNotice, getAttendanceReport };
+    const { processBulkImport } = require('../utils/bulkImport');
+    const result = await processBulkImport(req.file.buffer);
+
+    if (!result.success) {
+      return res.status(400).json({ message: result.message });
+    }
+
+    res.json({
+      message: `Import complete: ${result.summary.success} added, ${result.summary.failed} failed.`,
+      summary: result.summary
+    });
+  } catch (err) {
+    console.error('Bulk import controller error:', err);
+    res.status(500).json({ message: 'Server error during bulk import' });
+  }
+};
+
+module.exports = { getDashboard, getUsers, getUser, updateUser, deleteUser, createNotice, getNotices, deleteNotice, getAttendanceReport, bulkImportStudents };
