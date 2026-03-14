@@ -9,8 +9,7 @@ services:
       - key: PORT
         value: 5000
       - key: CLIENT_URL
-        # This will need to be updated to the Vercel URL later
-        value: http://localhost:5173
+        value: https://ssipmt-full-stack.vercel.app
       - key: JWT_SECRET
         value: ssipmt_super_secret_jwt_key_2024
       - key: REFRESH_SECRET
