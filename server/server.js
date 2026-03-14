@@ -55,13 +55,22 @@ app.use((err, _req, res, _next) => {
 // ── Database + Start ──────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
+// Connect to MongoDB with timeout options
+const connectDB = async () => {
+  try {
+    console.log('⏳  Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGO_URI, {
+      connectTimeoutMS: 10000, // 10 seconds timeout
+      serverSelectionTimeoutMS: 10000,
+    });
     console.log('✅  MongoDB connected');
-    app.listen(PORT, () => console.log(`🚀  Server running on port ${PORT}`));
-  })
-  .catch((err) => {
+  } catch (err) {
     console.error('❌  MongoDB connection failed:', err.message);
-    process.exit(1);
-  });
+    // On production, we might want to keep the server running but restricted
+    // For now, let's log it clearly
+  }
+};
+
+connectDB();
+
+app.listen(PORT, () => console.log(`🚀  Server running on port ${PORT}`));
