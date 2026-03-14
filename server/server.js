@@ -13,27 +13,30 @@ const noteRoutes = require('./routes/noteRoutes');
 
 const app = express();
 
-// ── Security middleware ───────────────────────────────────────────────────────
-app.use(helmet());
-
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  process.env.CLIENT_URL,
-].filter(Boolean);
-
-app.use(cors({
+// ── CORS must come BEFORE helmet ──────────────────────────────────────────────
+const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g., curl, mobile apps, Render health checks)
+    // Allow requests with no origin (curl, mobile, Render health checks)
     if (!origin) return callback(null, true);
-    // Allow any vercel.app subdomain dynamically
-    if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error(`CORS policy: origin ${origin} not allowed`));
+    // Allow localhost in dev
+    if (origin.startsWith('http://localhost')) return callback(null, true);
+    // Allow any *.vercel.app subdomain (covers all Vercel preview & prod URLs)
+    if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+    // Allow explicit CLIENT_URL from env if set
+    if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) return callback(null, true);
+    return callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,
-}));
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+// Handle preflight OPTIONS for ALL routes explicitly
+app.options('*', cors(corsOptions));
+
+// ── Security middleware (after CORS) ─────────────────────────────────────────
+app.use(helmet({ crossOriginResourcePolicy: false }));
 
 // Rate-limit auth endpoints (15 req / 15 min per IP)
 const authLimiter = rateLimit({
