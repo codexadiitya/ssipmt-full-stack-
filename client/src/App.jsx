@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -44,6 +45,18 @@ html,body,#root{height:100%;margin:0;padding:0;background:var(--bg)}
   --T:#1a1a1a;--T2:#4b5563;--T3:#9ca3af;
   --sh:0 8px 32px rgba(0,0,0,0.06);--sh2:0 12px 48px rgba(162,142,249,0.2);
 }
+[data-theme="dark"]{
+  --bg:#121218;--w:#1e1e2a;--bdr:#2d2d3d;
+  --PL:#2a2540;--PM:#3d3560;
+  --GL:#1a2e1f;--OL:#2e2515;--RL:#2e1518;--BL:#15202e;
+  --T:#f0f0f5;--T2:#a0a0b5;--T3:#6b6b80;
+  --sh:0 8px 32px rgba(0,0,0,0.3);--sh2:0 12px 48px rgba(162,142,249,0.15);
+}
+[data-theme="dark"] .split-header{background:#2a2050}
+[data-theme="dark"] .lw{background:#2a2050}
+[data-theme="dark"] .bnav-wrapper{background:#0a0a12;box-shadow:0 24px 64px rgba(0,0,0,.6)}
+[data-theme="dark"] .inp:focus{background:var(--P);color:#fff}
+*{transition:background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease}
 body{font-family:'Fustat',sans-serif;color:var(--T);min-height:100vh}
 button,input,select,textarea{font-family:'Fustat',sans-serif;color:var(--T)}
 a{color:inherit;text-decoration:none}
@@ -149,6 +162,10 @@ tr:hover td{background:var(--PL);color:var(--P);cursor:pointer}
 .ld{width:18px;height:18px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp 1s linear infinite}
 @media(max-width:900px){.g2{grid-template-columns:1fr}.hide{display:none!important}.page{padding:10px 16px 100px}}
 @media(max-width:500px){.lcard{padding:32px 24px}}
+.theme-toggle{width:48px;height:48px;border-radius:24px;background:var(--w);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:20px;border:none;box-shadow:0 8px 24px rgba(0,0,0,0.1);color:var(--P)}
+.theme-toggle:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,0.15)}
+.credit-note{text-align:center;padding:16px;font-size:12px;font-weight:700;color:var(--T3);letter-spacing:0.5px;opacity:0.6}
+.credit-note span{color:var(--P);font-weight:900}
 `;
 
 // Navigation config per role
@@ -173,7 +190,7 @@ const NAV = {
   ],
 };
 
-function AppShell({ children }) {
+function AppShell({ children, darkMode, toggleDark }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -202,6 +219,13 @@ function AppShell({ children }) {
             </div>
           </div>
           <div className="tb-r">
+            <button
+              className="theme-toggle"
+              onClick={toggleDark}
+              title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
             <div
               className="av"
               onClick={goToSettings}
@@ -235,11 +259,25 @@ function AppShell({ children }) {
           ))}
         </div>
       </div>
+
+      {/* Credit Note */}
+      <div className="credit-note">
+        made with 💜 by <span>moii</span>
+      </div>
     </div>
   );
 }
 
 export default function App() {
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('ssipmt_theme') === 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    localStorage.setItem('ssipmt_theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
+  const toggleDark = () => setDarkMode(d => !d);
+
   return (
     <>
       <style>{CSS}</style>
@@ -251,31 +289,31 @@ export default function App() {
 
         {/* Student routes */}
         <Route element={<ProtectedRoute role="student" />}>
-          <Route element={<AppShell><Routes><Route index element={null} /></Routes></AppShell>}>
+          <Route element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><Routes><Route index element={null} /></Routes></AppShell>}>
           </Route>
-          <Route path="/settings" element={<AppShell><ProfileSettings /></AppShell>} />
-          <Route path="/student/dashboard" element={<AppShell><StudentDashboard /></AppShell>} />
-          <Route path="/student/attendance" element={<AppShell><Attendance /></AppShell>} />
-          <Route path="/student/notes" element={<AppShell><StudentNotes /></AppShell>} />
-          <Route path="/student/results" element={<AppShell><Results /></AppShell>} />
-          <Route path="/student/timetable" element={<AppShell><Timetable /></AppShell>} />
+          <Route path="/settings" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><ProfileSettings /></AppShell>} />
+          <Route path="/student/dashboard" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><StudentDashboard /></AppShell>} />
+          <Route path="/student/attendance" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><Attendance /></AppShell>} />
+          <Route path="/student/notes" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><StudentNotes /></AppShell>} />
+          <Route path="/student/results" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><Results /></AppShell>} />
+          <Route path="/student/timetable" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><Timetable /></AppShell>} />
         </Route>
 
         {/* Faculty routes */}
         <Route element={<ProtectedRoute role="faculty" />}>
-          <Route path="/settings" element={<AppShell><ProfileSettings /></AppShell>} />
-          <Route path="/faculty/dashboard" element={<AppShell><FacultyDashboard /></AppShell>} />
-          <Route path="/faculty/attendance" element={<AppShell><MarkAttendance /></AppShell>} />
-          <Route path="/faculty/notes" element={<AppShell><UploadNotes /></AppShell>} />
+          <Route path="/settings" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><ProfileSettings /></AppShell>} />
+          <Route path="/faculty/dashboard" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><FacultyDashboard /></AppShell>} />
+          <Route path="/faculty/attendance" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><MarkAttendance /></AppShell>} />
+          <Route path="/faculty/notes" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><UploadNotes /></AppShell>} />
         </Route>
 
         {/* Admin routes */}
         <Route element={<ProtectedRoute role="admin" />}>
-          <Route path="/settings" element={<AppShell><ProfileSettings /></AppShell>} />
-          <Route path="/admin/dashboard" element={<AppShell><AdminDashboard /></AppShell>} />
-          <Route path="/admin/students" element={<AppShell><ManageStudents /></AppShell>} />
-          <Route path="/admin/notices" element={<AppShell><Notices /></AppShell>} />
-          <Route path="/admin/reports" element={<AppShell><Reports /></AppShell>} />
+          <Route path="/settings" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><ProfileSettings /></AppShell>} />
+          <Route path="/admin/dashboard" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><AdminDashboard /></AppShell>} />
+          <Route path="/admin/students" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><ManageStudents /></AppShell>} />
+          <Route path="/admin/notices" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><Notices /></AppShell>} />
+          <Route path="/admin/reports" element={<AppShell darkMode={darkMode} toggleDark={toggleDark}><Reports /></AppShell>} />
         </Route>
 
         {/* Default - redirect to login */}

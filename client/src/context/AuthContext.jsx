@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 import api from '../services/api';
+import { DEMO_MODE, getDemoUser } from '../services/mockData';
 
 const AuthContext = createContext(null);
 
@@ -16,6 +17,15 @@ export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(() => localStorage.getItem('ssipmt_access') || null);
 
   const login = useCallback(async (email, password) => {
+    if (DEMO_MODE) {
+      const demoUser = getDemoUser(email);
+      localStorage.setItem('ssipmt_access', 'demo_token_' + demoUser.role);
+      localStorage.setItem('ssipmt_refresh', 'demo_refresh_' + demoUser.role);
+      localStorage.setItem('ssipmt_user', JSON.stringify(demoUser));
+      setAccessToken('demo_token_' + demoUser.role);
+      setUser(demoUser);
+      return demoUser;
+    }
     const { data } = await api.post('/api/auth/login', { email, password });
     localStorage.setItem('ssipmt_access', data.accessToken);
     localStorage.setItem('ssipmt_refresh', data.refreshToken);
@@ -26,6 +36,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const register = useCallback(async (payload) => {
+    if (DEMO_MODE) {
+      const demoUser = getDemoUser(payload?.email || 'student');
+      localStorage.setItem('ssipmt_access', 'demo_token_' + demoUser.role);
+      localStorage.setItem('ssipmt_refresh', 'demo_refresh_' + demoUser.role);
+      localStorage.setItem('ssipmt_user', JSON.stringify(demoUser));
+      setAccessToken('demo_token_' + demoUser.role);
+      setUser(demoUser);
+      return demoUser;
+    }
     const { data } = await api.post('/api/auth/register', payload);
     localStorage.setItem('ssipmt_access', data.accessToken);
     localStorage.setItem('ssipmt_refresh', data.refreshToken);
@@ -44,6 +63,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
+    if (DEMO_MODE) {
+      const token = 'demo_token_refreshed';
+      localStorage.setItem('ssipmt_access', token);
+      setAccessToken(token);
+      return token;
+    }
     const refreshToken = localStorage.getItem('ssipmt_refresh');
     if (!refreshToken) throw new Error('No refresh token');
     const { data } = await api.post('/api/auth/refresh', { refreshToken });

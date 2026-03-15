@@ -86,21 +86,29 @@ app.use((err, _req, res, _next) => {
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0'; // Required for Railway / Docker containers
 
-const connectDB = async () => {
+const connectDB = async (retries = 5) => {
   if (!process.env.MONGO_URI) {
     console.error('❌  MONGO_URI not set! Please add it to environment variables.');
     return;
   }
-  try {
-    console.log('⏳  Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGO_URI, {
-      connectTimeoutMS: 10000,
-      serverSelectionTimeoutMS: 10000,
-    });
-    console.log('✅  MongoDB connected');
-  } catch (err) {
-    console.error('❌  MongoDB connection failed:', err.message);
+  for (let i = 1; i <= retries; i++) {
+    try {
+      console.log(`⏳  Connecting to MongoDB (attempt ${i}/${retries})...`);
+      await mongoose.connect(process.env.MONGO_URI, {
+        connectTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 10000,
+      });
+      console.log('✅  MongoDB connected');
+      return;
+    } catch (err) {
+      console.error(`❌  MongoDB connection attempt ${i} failed:`, err.message);
+      if (i < retries) {
+        console.log('⏳  Retrying in 5 seconds...');
+        await new Promise(r => setTimeout(r, 5000));
+      }
+    }
   }
+  console.error('❌  All MongoDB connection attempts failed. Server running without DB.');
 };
 
 const startServer = async () => {
