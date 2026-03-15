@@ -11,6 +11,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const noteRoutes = require('./routes/noteRoutes');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const corsOptions = {
