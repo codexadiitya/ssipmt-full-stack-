@@ -2,7 +2,9 @@
   "name": "ssipmt-portal-monorepo",
   "version": "1.0.0",
   "scripts": {
-    "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "build": "cd server && npm install",
+    "start": "cd server && node server.js",
+    "dev": "concurrently \"npm run start:server\" \"npm run start:client\"",
     "start:server": "cd server && npm start",
     "start:client": "cd client && npm run dev",
     "install:all": "npm install && cd client && npm install && cd ../server && npm install"
